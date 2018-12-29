@@ -107,37 +107,33 @@ router.post('/', (req, res) => {
 
 })
 
-// Show single story
+// Show Single Story
 router.get('/show/:id', (req, res) => {
     Story.findOne({
-        _id: req.params.id
+      _id: req.params.id
     })
     .populate('user')
-    // .populate('comments.commentUser')
+    .populate('comments.commentUser')
     .then(story => {
-        if (story.status == 'public') {
+      if(story.status == 'public'){
+        res.render('stories/show', {
+          story:story
+        });
+      } else {
+        if(req.user){
+          if(req.user.id == story.user._id){
             res.render('stories/show', {
-                story: story
+              story:story
             });
+          } else {
+            res.redirect('/stories');
+          }
         } else {
-            if (req.user) {
-                if (req.user.id == story.user._id) {
-                    res.render('stories/show', {
-                        story: story
-                    })
-                } else {
-                    console.log('Boot out');
-                    res.redirect('/stories');
-                }
-            } else {
-                res.redirect('/stories');
-            }
+          res.redirect('/stories');
         }
-    })
-    .catch(err => {
-        console.log(err);
-    })
-})
+      }
+    });
+  });
 
 // Add comment
 router.post('/comment/:id', (req, res) => {
